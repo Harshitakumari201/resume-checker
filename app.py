@@ -3,9 +3,6 @@ import re
 from flask import Flask, render_template, request, jsonify
 import PyPDF2
 import docx
-import plotly.graph_objs as go
-import plotly.utils
-import json
 from collections import Counter
 
 app = Flask(__name__)
@@ -128,71 +125,6 @@ def analyze_resume(text):
         'has_phone': has_phone
     }
 
-def create_visualizations(analysis):
-    """Create Plotly visualizations"""
-    
-    # ATS Score Gauge
-    gauge = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
-        value=analysis['ats_score'],
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "ATS Score", 'font': {'size': 24}},
-        delta={'reference': 70},
-        gauge={
-            'axis': {'range': [None, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "darkblue"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [0, 50], 'color': '#ffcccc'},
-                {'range': [50, 70], 'color': '#fff4cc'},
-                {'range': [70, 100], 'color': '#ccffcc'}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 70
-            }
-        }
-    ))
-    
-    # Category Scores Bar Chart
-    categories = list(analysis['category_scores'].keys())
-    percentages = [analysis['category_scores'][cat]['percentage'] for cat in categories]
-    
-    bar_chart = go.Figure(data=[
-        go.Bar(
-            x=categories,
-            y=percentages,
-            marker_color=['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728'],
-            text=percentages,
-            textposition='auto',
-        )
-    ])
-    bar_chart.update_layout(
-        title='Keyword Match by Category',
-        xaxis_title='Category',
-        yaxis_title='Match Percentage (%)',
-        yaxis=dict(range=[0, 100])
-    )
-    
-    # Keyword Distribution Pie Chart
-    matched_counts = [len(analysis['matches'][cat]) for cat in categories]
-    
-    pie_chart = go.Figure(data=[go.Pie(
-        labels=categories,
-        values=matched_counts,
-        hole=.3
-    )])
-    pie_chart.update_layout(title='Matched Keywords Distribution')
-    
-    return {
-        'gauge': json.dumps(gauge, cls=plotly.utils.PlotlyJSONEncoder),
-        'bar_chart': json.dumps(bar_chart, cls=plotly.utils.PlotlyJSONEncoder),
-        'pie_chart': json.dumps(pie_chart, cls=plotly.utils.PlotlyJSONEncoder)
-    }
-
 @app.route('/')
 def index():
     """Main page"""
@@ -235,4 +167,6 @@ def analyze():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use environment variable to control debug mode (defaults to False for security)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(debug=debug_mode, host='0.0.0.0', port=5000)
