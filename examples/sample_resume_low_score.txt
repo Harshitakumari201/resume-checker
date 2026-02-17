@@ -1,0 +1,16 @@
+Jane Doe
+jane.doe@example.com
+
+EXPERIENCE
+Worked at a company for 2 years
+- Did various tasks
+- Helped with projects
+- Attended meetings
+
+EDUCATION
+Graduated from college in 2020
+
+SKILLS
+- Good with computers
+- Can work in teams
+- Fast learner

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume ATS Checker - Visualized Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📄 Resume ATS Checker</h1>
+            <p class="subtitle">Upload your resume and get instant ATS score with visual analysis</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-box" id="uploadBox">
+                <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <p class="upload-text">Click to upload or drag and drop</p>
+                <p class="upload-subtext">PDF, DOCX, or TXT (Max 16MB)</p>
+                <input type="file" id="fileInput" accept=".pdf,.docx,.txt" hidden>
+            </div>
+            <button id="analyzeBtn" class="btn btn-primary" disabled>Analyze Resume</button>
+        </div>
+
+        <div id="loadingSection" class="loading-section" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analyzing your resume...</p>
+        </div>
+
+        <div id="resultsSection" class="results-section" style="display: none;">
+            <h2>📊 Analysis Results</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="atsScore">0</h3>
+                    <p>ATS Score</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalMatches">0</h3>
+                    <p>Keywords Matched</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="wordCount">0</h3>
+                    <p>Word Count</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="contactInfo">❌</h3>
+                    <p>Contact Info</p>
+                </div>
+            </div>
+
+            <div class="visualization-grid">
+                <div class="viz-card">
+                    <div id="gaugeChart"></div>
+                </div>
+                <div class="viz-card">
+                    <div id="barChart"></div>
+                </div>
+                <div class="viz-card">
+                    <div id="pieChart"></div>
+                </div>
+            </div>
+
+            <div class="keywords-section">
+                <h3>🔍 Matched Keywords by Category</h3>
+                <div id="keywordsList"></div>
+            </div>
+
+            <div class="recommendations">
+                <h3>💡 Recommendations</h3>
+                <ul id="recommendationsList"></ul>
+            </div>
+
+            <button class="btn btn-secondary" onclick="location.reload()">Analyze Another Resume</button>
+        </div>
+    </div>
+
+    <script>
+        const uploadBox = document.getElementById('uploadBox');
+        const fileInput = document.getElementById('fileInput');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const loadingSection = document.getElementById('loadingSection');
+        const resultsSection = document.getElementById('resultsSection');
+        let selectedFile = null;
+
+        // Upload box click handler
+        uploadBox.addEventListener('click', () => fileInput.click());
+
+        // Drag and drop handlers
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#007bff';
+            uploadBox.style.backgroundColor = '#f0f8ff';
+        });
+
+        uploadBox.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#ddd';
+            uploadBox.style.backgroundColor = 'white';
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.style.borderColor = '#ddd';
+            uploadBox.style.backgroundColor = 'white';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        // File input change handler
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        function handleFileSelect(file) {
+            const validTypes = ['.pdf', '.docx', '.txt'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            
+            if (!validTypes.includes(fileExt)) {
+                alert('Please upload a PDF, DOCX, or TXT file');
+                return;
+            }
+
+            selectedFile = file;
+            document.querySelector('.upload-text').textContent = file.name;
+            document.querySelector('.upload-subtext').textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+            analyzeBtn.disabled = false;
+        }
+
+        // Analyze button handler
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('resume', selectedFile);
+
+            loadingSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            document.querySelector('.upload-section').style.display = 'none';
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data.analysis, data.visualizations);
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                    location.reload();
+                }
+            } catch (error) {
+                alert('Error analyzing resume: ' + error.message);
+                location.reload();
+            }
+        });
+
+        function displayResults(analysis, visualizations) {
+            loadingSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+
+            // Update stats
+            document.getElementById('atsScore').textContent = analysis.ats_score;
+            document.getElementById('totalMatches').textContent = analysis.total_matches;
+            document.getElementById('wordCount').textContent = analysis.word_count;
+            
+            const contactIcon = (analysis.has_email && analysis.has_phone) ? '✅' : '⚠️';
+            document.getElementById('contactInfo').textContent = contactIcon;
+
+            // Render visualizations
+            Plotly.newPlot('gaugeChart', JSON.parse(visualizations.gauge).data, 
+                          JSON.parse(visualizations.gauge).layout);
+            Plotly.newPlot('barChart', JSON.parse(visualizations.bar_chart).data, 
+                          JSON.parse(visualizations.bar_chart).layout);
+            Plotly.newPlot('pieChart', JSON.parse(visualizations.pie_chart).data, 
+                          JSON.parse(visualizations.pie_chart).layout);
+
+            // Display matched keywords
+            const keywordsList = document.getElementById('keywordsList');
+            keywordsList.innerHTML = '';
+            
+            for (const [category, keywords] of Object.entries(analysis.matches)) {
+                if (keywords.length > 0) {
+                    const categoryDiv = document.createElement('div');
+                    categoryDiv.className = 'keyword-category';
+                    
+                    const categoryTitle = document.createElement('h4');
+                    categoryTitle.textContent = category.replace('_', ' ').toUpperCase();
+                    categoryDiv.appendChild(categoryTitle);
+                    
+                    const keywordTags = document.createElement('div');
+                    keywordTags.className = 'keyword-tags';
+                    
+                    keywords.forEach(keyword => {
+                        const tag = document.createElement('span');
+                        tag.className = 'keyword-tag';
+                        tag.textContent = keyword;
+                        keywordTags.appendChild(tag);
+                    });
+                    
+                    categoryDiv.appendChild(keywordTags);
+                    keywordsList.appendChild(categoryDiv);
+                }
+            }
+
+            // Generate recommendations
+            const recommendations = generateRecommendations(analysis);
+            const recList = document.getElementById('recommendationsList');
+            recList.innerHTML = '';
+            
+            recommendations.forEach(rec => {
+                const li = document.createElement('li');
+                li.textContent = rec;
+                recList.appendChild(li);
+            });
+        }
+
+        function generateRecommendations(analysis) {
+            const recommendations = [];
+            
+            if (analysis.ats_score < 50) {
+                recommendations.push('Your ATS score is low. Consider adding more relevant keywords from the job description.');
+            } else if (analysis.ats_score < 70) {
+                recommendations.push('Your ATS score is moderate. Add more industry-specific keywords to improve.');
+            } else {
+                recommendations.push('Great ATS score! Your resume has good keyword coverage.');
+            }
+
+            if (!analysis.has_email || !analysis.has_phone) {
+                recommendations.push('Make sure to include both email and phone number in your contact information.');
+            }
+
+            if (analysis.word_count < 300) {
+                recommendations.push('Your resume seems short. Consider adding more details about your experience and skills.');
+            } else if (analysis.word_count > 800) {
+                recommendations.push('Your resume might be too long. Consider condensing to 1-2 pages.');
+            }
+
+            // Category-specific recommendations
+            Object.entries(analysis.category_scores).forEach(([category, score]) => {
+                if (score.percentage < 30) {
+                    recommendations.push(`Add more ${category.replace('_', ' ')} keywords to strengthen this section.`);
+                }
+            });
+
+            return recommendations;
+        }
+    </script>
+</body>
+</html>
