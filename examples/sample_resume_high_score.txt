@@ -1,0 +1,57 @@
+John Smith
+Email: john.smith@email.com
+Phone: (555) 123-4567
+Location: San Francisco, CA
+
+PROFESSIONAL SUMMARY
+Experienced Software Engineer with 5+ years of expertise in developing scalable web applications. 
+Strong background in Python, JavaScript, and cloud technologies. Proven track record in leading 
+teams and delivering high-quality software solutions.
+
+TECHNICAL SKILLS
+- Programming Languages: Python, JavaScript, Java, C++, SQL
+- Web Technologies: React, Angular, Node.js, HTML, CSS, Django, Flask
+- Cloud & DevOps: AWS, Azure, Docker, Kubernetes, Git, CI/CD
+- Data & AI: Machine Learning, Data Science, Artificial Intelligence
+- Databases: PostgreSQL, MongoDB, Redis
+
+PROFESSIONAL EXPERIENCE
+
+Senior Software Engineer | Tech Corp | 2021 - Present
+- Led a team of 5 developers in building a cloud-based SaaS platform
+- Developed and implemented machine learning algorithms for data analysis
+- Improved application performance by 40% through optimization
+- Managed deployment pipelines using Docker and Kubernetes
+- Coordinated with cross-functional teams to deliver features on time
+
+Software Developer | StartUp Inc | 2019 - 2021
+- Designed and built RESTful APIs using Django and Flask
+- Created responsive web interfaces with React and Angular
+- Implemented automated testing and continuous integration
+- Analyzed user data to improve product features
+- Collaborated with product managers and designers
+
+EDUCATION
+Bachelor of Science in Computer Science
+University of California, Berkeley | 2015 - 2019
+- GPA: 3.8/4.0
+- Relevant Coursework: Data Structures, Algorithms, Database Systems
+
+CERTIFICATIONS
+- AWS Certified Solutions Architect
+- Google Cloud Professional Developer
+- Certified Kubernetes Administrator
+
+SOFT SKILLS
+- Leadership and team management
+- Excellent communication skills
+- Problem solving and critical thinking
+- Time management and adaptability
+- Strong attention to detail
+- Collaboration and teamwork
+
+ACHIEVEMENTS
+- Delivered 15+ projects successfully with 100% client satisfaction
+- Optimized database queries reducing response time by 60%
+- Built and established development best practices for the team
+- Created automated deployment system saving 20 hours per week
