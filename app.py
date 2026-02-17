@@ -116,7 +116,7 @@ def analyze_resume(text):
     # Word count and formatting analysis
     word_count = len(text.split())
     has_email = bool(re.search(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', text))
-    has_phone = bool(re.search(r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', text))
+    has_phone = bool(re.search(r'[\(]?\d{3}[\)]?[-.\s]?\d{3}[-.\s]?\d{4}', text))
     
     return {
         'ats_score': ats_score,
@@ -220,15 +220,13 @@ def analyze():
             return jsonify({'error': 'Could not extract text from file'}), 400
         
         analysis = analyze_resume(text)
-        visualizations = create_visualizations(analysis)
         
         # Clean up
         os.remove(file_path)
         
         return jsonify({
             'success': True,
-            'analysis': analysis,
-            'visualizations': visualizations
+            'analysis': analysis
         })
     
     except Exception as e:
